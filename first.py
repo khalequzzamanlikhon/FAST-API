@@ -27,7 +27,7 @@ students = {
 
 # ######################################################### path parameter ################################################################
 @app.get("/get-student/{student_id}")
-def get_student(student_id: Optional[int] = Path(..., description="Enter the ID of the student", ge=0, le=2)):
+def get_student(student_id: Optional[int] = Path(..., description="Enter the ID of the student", ge=0, le=120)):
     if student_id not in students:
         raise HTTPException(status_code=404, detail="Student not found")
     return students[student_id]
@@ -81,3 +81,41 @@ def create_student(student_id: int, student: Student):
     students[student_id] = student
     return students[student_id]
 
+
+
+############################################################## Update ##########################################################
+
+'''
+if we want to update an entry using the Student class then we need 
+to update all the values. this is not a good practice. We need to update let's say
+only the name or age or grade. for this particular reason here I will  create another
+class first and make the instances optional.
+'''
+class UpdateStudent(BaseModel):
+    name: Optional[str] = None
+    age: Optional[int] = None
+    grade: Optional[str] = None
+
+@app.put("/update-student/{student_id}")
+def update_student(student_id: int, student: UpdateStudent):
+    if student_id not in students:
+        raise HTTPException(status_code=404, detail="This value doesn't exist! Cannot be updated.")
+    
+    if student.name is not None:
+        students[student_id]['name'] = student.name
+    if student.age is not None:
+        students[student_id]['age'] = student.age
+    if student.grade is not None:
+        students[student_id]['grade'] = student.grade
+
+    return students[student_id]
+
+#################################################### Delete ##########################################
+
+@app.delete("/delete-student/{student_id}")
+def delete_student(student_id:int=Path(...,description="Enter a valid id to be deleted")):
+    if student_id not in students:
+        raise HTTPException(status_code=404,detail="This id doesn't exist")
+    else:
+        del students[student_id]
+        return {"Message": "successfully deleted !"}
